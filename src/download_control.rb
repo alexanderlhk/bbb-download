@@ -38,7 +38,7 @@ meeting_metadata = BigBlueButton::Events.get_meeting_metadata("/var/bigbluebutto
 #
 # This runs the download script
 #
-download_status = system("/usr/bin/python /usr/local/bigbluebutton/core/scripts/post_publish/download.py #{meeting_id}")
+download_status = system("/usr/bin/python3 /usr/local/bigbluebutton/core/scripts/post_publish/download.py #{meeting_id}")
 
 
 exit 0
