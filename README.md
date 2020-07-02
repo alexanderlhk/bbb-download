@@ -8,7 +8,7 @@ Final MP4 video will include only presentation, audio and screenshare (no chat w
 - BigBlueButton 2.2 is supported (tested with BBB 2.2 beta 8)
 
 ## Requirements
-1. python2.7
+1. python3
 2. ffmpeg compiled with libx264 support (included)
 3. Installed and configured Big Blue Button server (1.1 or 2.0+)
 
@@ -24,7 +24,7 @@ sudo bbb-record --rebuildall
 
 
 This copies the download scripts to the BigBlueButton scripts folder, and copies compiled FFMPEG to the /opt/ffmpeg folder. 
-It also installs python2.7 and additional libs and give an appropriate rights for MP4 files to make them available for download.
+It also installs python3 and additional libs and give an appropriate rights for MP4 files to make them available for download.
 
 NOTE: You may use the guide [here](https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu) to compile ffmpeg in Ubuntu by your own. Be sure to include the following flags. 
 ```

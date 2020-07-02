@@ -27,8 +27,8 @@ def extract_audio_from_video(video_file, out_file):
 
 
 def create_video_from_image(image, duration, out_file):
-    print "*************** create_video_from_image ******************"
-    print image, "\n", duration, "\n", out_file
+    print('*'*15 + 'create_video_from_image' + '*'*15)
+    print(image, duration, out_file, sep='\n')
     command = '%s -loop 1 -r 5 -f image2 -i %s -c:v %s -t %s -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" %s 2>> %s' % (
         FFMPEG, image, VID_ENCODER, duration, out_file, logfile)
     os.system(command)
@@ -70,7 +70,7 @@ def trim_video(video_file, start, end, out_file):
     str1 = '%d:%d:%d' % (start_h, start_m, start_s)
     str2 = '%d:%d:%d' % (end_h, end_m, end_s)
     command = '%s -ss %s -t %s -i %s -vcodec copy -acodec copy %s 2>> %s' % (
-    FFMPEG, str1, str2, video_file, out_file, logfile)
+        FFMPEG, str1, str2, video_file, out_file, logfile)
     os.system(command)
 
 

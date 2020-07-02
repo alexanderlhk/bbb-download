@@ -9,6 +9,7 @@ import zipfile
 import ffmpeg
 import re
 import time
+import logging
 
 # Python script that produces downloadable material from a published bbb recording.
 
@@ -25,7 +26,7 @@ except IndexError:
 
 PATH = '/var/bigbluebutton/published/presentation/'
 LOGS = '/var/log/bigbluebutton/download/'
-source_dir = PATH + meetingId + "/"
+source_dir = PATH + meetingId + '/'
 temp_dir = source_dir + 'temp/'
 target_dir = source_dir + 'download/'
 audio_path = 'audio/'
@@ -36,6 +37,33 @@ source_events = '/var/bigbluebutton/recording/raw/' + meetingId + '/events.xml'
 # Deskshare
 SOURCE_DESKSHARE = source_dir + 'deskshare/deskshare.webm'
 TMP_DESKSHARE_FILE = temp_dir + 'deskshare.mp4'
+
+
+def setup_logger(logger_level, file_name=LOGFILE, extra_name='', log=None):
+    file_name = file_name.split('.')[0]
+    if not log:
+        logger = logging.getLogger(file_name+str(extra_name))
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger = log
+
+    fh = logging.FileHandler(os.path.join(LOGS, file_name))
+    fh.setLevel(logger_level)
+
+    logging.Formatter.converter = time.gmtime #set utc time
+    formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+
+    fh.setFormatter(formatter)
+
+    for hdlr in logger.handlers[:]:  # remove all old handlers
+        logger.removeHandler(hdlr)
+
+    logger.addHandler(fh) #set new handler
+
+    return logger
+
+
+logger = setup_logger(logging.DEBUG)
 
 
 def extract_timings(bbb_version):
@@ -67,42 +95,41 @@ def extract_timings(bbb_version):
 
 def create_slideshow(dictionary, length, result, bbb_version):
     video_list = 'video_list.txt'
-    f = open(video_list, 'w')
 
-    times = dictionary.keys()
-    times.sort()
+    with open(video_list, 'w') as f:
+        times = dictionary.keys()
+        times.sort()
 
-    ffmpeg.webm_to_mp4(SOURCE_DESKSHARE, TMP_DESKSHARE_FILE)
+        ffmpeg.webm_to_mp4(SOURCE_DESKSHARE, TMP_DESKSHARE_FILE)
 
-    print >> sys.stderr, "-=create_slideshow=-"
-    for i, t in enumerate(times):
-        # print >> sys.stderr, (i, t)
+        logger.info('-=create_slideshow=-')
+        for i, t in enumerate(times):
+            #logger.debug('{} {}'.format(i, t))
 
-        # if i < 1 and '2.0.0' > bbbversion:
-        #   continue
+            # if i < 1 and '2.0.0' > bbbversion:
+            #   continue
 
-        tmp_name = '%d.mp4' % i
-        tmp_ts_name = '%d.ts' % i
-        image = dictionary[t]
+            tmp_name = '%d.mp4' % i
+            tmp_ts_name = '%d.ts' % i
+            image = dictionary[t]
 
-        if i == len(times) - 1:
-            duration = length - t
-        else:
-            duration = times[i + 1] - t
+            if i == len(times) - 1:
+                duration = length - t
+            else:
+                duration = times[i + 1] - t
 
-        out_file = temp_dir + tmp_name
-        out_ts_file = temp_dir + tmp_ts_name
+            out_file = temp_dir + tmp_name
+            out_ts_file = temp_dir + tmp_ts_name
 
-        if "deskshare.png" in image:
-            print >> sys.stderr, (0, i, t, duration)
-            ffmpeg.trim_video_by_seconds(TMP_DESKSHARE_FILE, t, duration, out_file)
-            ffmpeg.mp4_to_ts(out_file, out_ts_file)
-        else:
-            print >> sys.stderr, (1, i, t, duration)
-            ffmpeg.create_video_from_image(image, duration, out_ts_file)
+            if 'deskshare.png' in image:
+                logger.info('{} {} {} {}'.format(0, i, t, duration))
+                ffmpeg.trim_video_by_seconds(TMP_DESKSHARE_FILE, t, duration, out_file)
+                ffmpeg.mp4_to_ts(out_file, out_ts_file)
+            else:
+                logger.info('{} {} {} {}'.format(1, i, t, duration))
+                ffmpeg.create_video_from_image(image, duration, out_ts_file)
 
-        f.write('file ' + out_ts_file + '\n')
-    f.close()
+            f.write('file ' + out_ts_file + '\n')
 
     ffmpeg.concat_videos(video_list, result)
     os.remove(video_list)
@@ -126,25 +153,23 @@ def rescale_presentation(new_height, new_width, dictionary, bbb_version):
     times.sort()
     for i, t in enumerate(times):
         # ?
-        #print >> sys.stderr, "_rescale_presentation_"
-        #print >> sys.stderr, (i, t)
+        #logger.debug('_rescale_presentation_')
+        #logger.debug('{} {}'.format(i, t))
 
         if i < 1 and '2.0.0' > bbb_version:
             continue
 
-        #print >> sys.stderr, "_rescale_presentation_after_skip_"
-        #print >> sys.stderr, (i, t)
+        #logger.debug('_rescale_presentation_after_skip_')
+        #logger.debug('{} {}'.format(i, t))
 
         ffmpeg.rescale_image(dictionary[t], new_height, new_width, dictionary[t])
 
 
 def check_presentation_dims(dictionary, dims, bbb_version):
-    names = dims.keys()
     heights = []
     widths = []
 
-    for i in names:
-        temp = dims[i]
+    for temp in dims.values():
         heights.append(temp[0])
         widths.append(temp[1])
 
@@ -179,35 +204,30 @@ def prepare(bbb_version):
         os.mkdir(audio_path)
         ffmpeg.extract_audio_from_video('video/webcams.webm', audio_path + 'audio.ogg')
 
-    shutil.copytree("presentation", temp_dir + "presentation")
+    shutil.copytree('presentation', temp_dir + 'presentation')
     dictionary, length = extract_timings(bbb_version)
     # debug
-    print >> sys.stderr, "dictionary"
-    print >> sys.stderr, (dictionary)
-    print >> sys.stderr, "length"
-    print >> sys.stderr, (length)
+    logger.debug('Dictionary: {}'.format(dictionary))
+    logger.debug('Length: {}'.format(length))
     dims = get_different_presentations(dictionary)
     # debug
-    print >> sys.stderr, "dims"
-    print >> sys.stderr, (dims)
+    logger.debug('Dims: {}'.format(dims))
     check_presentation_dims(dictionary, dims, bbb_version)
     return dictionary, length, dims
 
 
 def get_different_presentations(dictionary):
     times = dictionary.keys()
-    print >> sys.stderr, "times"
-    print >> sys.stderr, (times)
+    logger.info('Times: {}'.format(times))
     presentations = []
     dims = {}
     for t in times:
         # ?if t < 1:
         # ?    continue
 
-        name = dictionary[t].split("/")[7]
+        name = dictionary[t].split('/')[7]
         # debug
-        print >> sys.stderr, "name"
-        print >> sys.stderr, (name)
+        logger.debug('Name: {}'.format(name))
         if name not in presentations:
             presentations.append(name)
             dims[name] = get_presentation_dims(name)
@@ -236,7 +256,7 @@ def copy_mp4(result, dest):
 def zipdir(path):
     filename = meetingId + '.zip'
     zipf = zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED)
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         for f in files:
             zipf.write(os.path.join(root, f))
     zipf.close()
@@ -257,14 +277,14 @@ def bbbversion():
 
 def main():
     sys.stderr = open(LOGFILE, 'a')
-    print >> sys.stderr, "\n<-------------------" + time.strftime("%c") + "----------------------->\n"
+    logger.info('\n<{dash}{time}{dash}>\n'.format(dash='-'*20, time=time.strftime('%c')))
 
     bbb_version = bbbversion()
-    print >> sys.stderr, "bbb_version: " + bbb_version
+    logger.info('bbb_version: {}'.format(bbb_version))
 
     os.chdir(source_dir)
 
-    dictionary, length, dims = prepare(bbb_version)
+    dictionary, length, _ = prepare(bbb_version)
 
     audio = audio_path + 'audio.ogg'
     audio_trimmed = temp_dir + 'audio_trimmed.m4a'
@@ -279,10 +299,10 @@ def main():
         # zipdir('./download/')
         copy_mp4(result, source_dir + meetingId + '.mp4')
     finally:
-        print >> sys.stderr, "Cleaning up temp files..."
+        logger.info('Cleaning up temp files...')
         cleanup()
-        print >> sys.stderr, "Done"
+        logger.info('Done')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
