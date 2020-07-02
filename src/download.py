@@ -1,5 +1,5 @@
-__author__ = 'CreateWebinar.com'
-__email__ = 'support@createwebinar.com'
+__author__ = 'CreateWebinar.com, softpoint.es'
+__email__ = 'support@createwebinar.com, info@softpoint.es'
 
 from xml.dom import minidom
 import sys

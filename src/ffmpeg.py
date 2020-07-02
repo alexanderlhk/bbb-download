@@ -1,4 +1,5 @@
-__author__ = 'CreateWebinar.com'
+__author__ = 'CreateWebinar.com, softpoint.es'
+__email__ = 'support@createwebinar.com, info@softpoint.es'
 
 # Python wrapper around the ffmpeg utility
 import os
