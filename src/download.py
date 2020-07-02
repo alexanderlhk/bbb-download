@@ -335,7 +335,7 @@ def main():
         logger.info('Done')
 
         if config.ALERT_RECEIVERS:
-            url = 'https://{dns}/download/presentation/{meetingID}/{meetingID}.mp4 '.format(
+            url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
                 dns=config.DNS,
                 meetingId=meetingId
             )
