@@ -97,7 +97,7 @@ def create_slideshow(dictionary, length, result, bbb_version):
     video_list = 'video_list.txt'
 
     with open(video_list, 'w') as f:
-        times = dictionary.keys()
+        times = list(dictionary.keys())
         times.sort()
 
         ffmpeg.webm_to_mp4(SOURCE_DESKSHARE, TMP_DESKSHARE_FILE)
