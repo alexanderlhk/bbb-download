@@ -9,7 +9,7 @@ then
 fi
 
 # Install python
-apt-get install -y python
+apt-get install -y python3
 
 # Install additional libs need to convertation process
 apt-get install -y curl libsdl2-mixer-2.0-0 libsdl2-image-2.0-0 libsdl2-2.0-0 libva-x11-1 libva-drm1 libfdk-aac-dev
