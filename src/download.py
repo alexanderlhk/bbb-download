@@ -149,7 +149,7 @@ def get_presentation_dims(presentation_name):
 
 
 def rescale_presentation(new_height, new_width, dictionary, bbb_version):
-    times = dictionary.keys()
+    times = list(dictionary.keys())
     times.sort()
     for i, t in enumerate(times):
         # ?
