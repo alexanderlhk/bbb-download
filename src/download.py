@@ -1,15 +1,21 @@
 __author__ = 'CreateWebinar.com, softpoint.es'
 __email__ = 'support@createwebinar.com, info@softpoint.es'
 
-from xml.dom import minidom
-import sys
-import os
-import shutil
-import zipfile
+import config
 import ffmpeg
-import re
-import time
+
 import logging
+import os
+import re
+import shutil
+import smtplib
+import sys
+import time
+import zipfile
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from xml.dom import minidom
 
 # Python script that produces downloadable material from a published bbb recording.
 
@@ -275,6 +281,31 @@ def bbbversion():
     return bbb_ver
 
 
+def sendmail(esubj, emsg, receivers=config.ALERT_RECEIVERS):
+    """
+    Send mail method via SMTP.
+
+    :params esubj: Email subject
+    :params emsg: Email message
+    :params receivers: Email receivers (default: config.ALERT_RECEIVERS)
+    """
+    if not receivers:
+        return
+    msg = MIMEMultipart()
+    msg['From'] = config.ALERT_SENDER
+    msg['To'] = ", ".join(receivers)
+    msg['Subject'] = esubj
+    msg.attach(MIMEText(emsg))
+    mailserver = smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT)
+    mailserver.ehlo()
+    mailserver.starttls()
+    mailserver.ehlo()
+    mailserver.login(config.SMTP_USER, config.SMTP_PASS)
+    mailserver.sendmail(config.ALERT_SENDER,
+                        receivers, msg.as_string())
+    mailserver.quit()
+
+
 def main():
     sys.stderr = open(LOGFILE, 'a')
     logger.info('\n<{dash}{time}{dash}>\n'.format(dash='-'*20, time=time.strftime('%c')))
@@ -302,6 +333,14 @@ def main():
         logger.info('Cleaning up temp files...')
         cleanup()
         logger.info('Done')
+
+        if config.ALERT_RECEIVERS:
+            url = 'https://{dns}/download/presentation/{meetingID}/{meetingID}.mp4 '.format(
+                dns=config.DNS,
+                meetingId=meetingId
+            )
+            mail = 'Dear User,\n\nYou can download or view the recording of your meeting from: {}'.format(url)
+            sendmail('[RECORDING READY] {}'.format(config.COMPANY), mail)
 
 
 if __name__ == '__main__':
