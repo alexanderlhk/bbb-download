@@ -16,7 +16,29 @@ Final MP4 video will include only presentation, audio and screenshare (no chat w
 ```
 git clone https://github.com/createwebinar/bbb-download.git
 cd bbb-download
-chmod u+x install.sh 
+chmod u+x install.sh
+```
+### Now you can configure `src/config.py` (optional)
+```
+SEND_EMAIL = True/False
+
+if SEND_EMAIL:
+    COMPANY = 'your company or service name'
+    DNS = 'your dns (without http or https)'
+
+    ########### PYTHON SMTP CONFIG ##############
+    ALERT_RECEIVERS = ["list of email receivers"]   # You can update it from an API using the meetingId
+    ALERT_SENDER = "email who sends the mail"       # dif <---
+    SMTP_HOST = "smtp.gmail.com"                    # If your email is from Gmail it is fine
+    SMTP_PORT = 587 # Default SMTP_PORT
+    SMTP_USER = "Your email user"
+    SMTP_PASS = "Your email password (you can get it from environment...)"
+    #############################################
+```
+
+### Finish installation
+
+```
 sudo ./install.sh
 # To convert all of your current recordings to MP4 format use command:
 sudo bbb-record --rebuildall
