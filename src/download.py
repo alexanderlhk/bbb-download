@@ -334,12 +334,12 @@ def main():
         cleanup()
         logger.info('Done')
 
-        if config.ALERT_RECEIVERS:
+        if config.SEND_EMAIL:
             url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
                 dns=config.DNS,
                 meetingId=meetingId
             )
-            mail = 'Dear User,\n\nYou can download or view the recording of your meeting from: {}'.format(url)
+            mail = 'Dear User,\n\nYou can download or view the recording of your meeting from:\n {}'.format(url)
             sendmail('[RECORDING READY] {}'.format(config.COMPANY), mail)
 
 
