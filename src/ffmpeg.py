@@ -98,13 +98,13 @@ def trim_audio(audio_file, start, end, out_file):
 
 
 def trim_audio_start(dictionary, length, full_audio, audio_trimmed):
-    times = dictionary.keys()
+    times = list(dictionary.keys())
     times.sort()
     trim_audio(full_audio, int(round(times[0])), int(length), audio_trimmed)
 
 
 def trim_video_start(dictionary, length, full_vid, video_trimmed):
-    times = dictionary.keys()
+    times = list(dictionary.keys())
     times.sort()
     trim_video(full_vid, int(round(times[2])), int(length), video_trimmed)
 
