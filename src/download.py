@@ -7,6 +7,7 @@ import ffmpeg
 import logging
 import os
 import re
+import requests
 import shutil
 import smtplib
 import sys
@@ -281,7 +282,7 @@ def bbbversion():
     return bbb_ver
 
 
-def sendmail(esubj, emsg, receivers=config.ALERT_RECEIVERS):
+def sendmail(esubj, emsg, receivers=config.ALERT_RECEIVERS, html=True):
     """
     Send mail method via SMTP.
 
@@ -295,7 +296,7 @@ def sendmail(esubj, emsg, receivers=config.ALERT_RECEIVERS):
     msg['From'] = config.ALERT_SENDER
     msg['To'] = ", ".join(receivers)
     msg['Subject'] = esubj
-    msg.attach(MIMEText(emsg))
+    msg.attach(MIMEText(emsg, 'html' if html else 'plain'))
     mailserver = smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT)
     mailserver.ehlo()
     mailserver.starttls()
@@ -304,6 +305,17 @@ def sendmail(esubj, emsg, receivers=config.ALERT_RECEIVERS):
     mailserver.sendmail(config.ALERT_SENDER,
                         receivers, msg.as_string())
     mailserver.quit()
+
+
+def html_email(head, body):
+    return """
+    <html>
+        <head>{head}</head>
+        <body>
+            {body}
+        </body>
+    </html>
+    """.format(head=head, body=body)
 
 
 def main():
@@ -335,12 +347,26 @@ def main():
         logger.info('Done')
 
         if config.SEND_EMAIL:
-            url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
-                dns=config.DNS,
-                meetingId=meetingId
+            response = requests.post(
+                config.API_GET_RECEIVERS,
+                json={
+                    'meeting_id': meetingId
+                },
+                auth=(config.API_USER, config.API_PASS)
             )
-            mail = 'Dear User,\n\nYou can download or view the recording of your meeting from:\n {}'.format(url)
-            sendmail('[RECORDING READY] {}'.format(config.COMPANY), mail)
+
+            if response.status_code == 200 and response.json()['status'] == 'success':
+                response = response.json()
+                url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
+                    dns=config.DNS,
+                    meetingId=meetingId
+                )
+                mail = 'Dear User,<br><br>Your recording is ready to be downloaded or viewed online <a href="{}">HERE</a>.'.format(url)
+                sendmail('[RECORDING READY] {}'.format(config.COMPANY), html_email('', mail), receivers=[response['owner']]+response['users'])
+
+            else:
+                mail = 'Error we cant find the recording {}:<br><br> {}'.format(meetingId, response.text)
+                sendmail('[RECORDING READY] {}'.format(config.COMPANY), html_email('', mail), receivers=[config.MAINTAINER])
 
 
 if __name__ == '__main__':

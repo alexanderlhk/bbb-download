@@ -1,6 +1,11 @@
-SEND_EMAIL = False
+SEND_EMAIL = True
 
 if SEND_EMAIL:
+    MAINTAINER = ''
+    API_GET_RECEIVERS = ''
+    API_USER = ''
+    API_PASS = ''
+
     COMPANY = ''
     DNS = ''
 
