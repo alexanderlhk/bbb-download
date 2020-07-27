@@ -327,7 +327,7 @@ def get_mail_body(url, language='es'):
     }
 
     if language not in bodies:
-        language = 'en'
+        language = 'es'
 
     return bodies[language]
 
@@ -339,7 +339,7 @@ def get_mail_header(company, language='es'):
     }
 
     if language not in headers:
-        language = 'en'
+        language = 'es'
 
     return headers[language]
 
@@ -368,11 +368,6 @@ def main():
         # zipdir('./download/')
         copy_mp4(result, source_dir + meetingId + '.mp4')
     finally:
-        if logger.level > logging.DEBUG:
-            logger.info('Cleaning up temp files...')
-            cleanup()
-
-            logger.info('Done')
 
         if config.SEND_EMAIL:
             response = requests.post(
@@ -405,6 +400,12 @@ def main():
                          html_email('', mail_body),
                          receivers=[config.MAINTAINER]
                 )
+
+        if logger.level > logging.DEBUG:
+            time.sleep(5)
+            logger.info('Cleaning up temp files...')
+            cleanup()
+            logger.info('Done')
 
 
 if __name__ == '__main__':
