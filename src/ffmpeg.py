@@ -60,18 +60,8 @@ def rescale_image(image, height, width, out_file):
 
 
 def trim_video(video_file, start, end, out_file):
-    start_h = start / 3600
-    start_m = start / 60 - start_h * 60
-    start_s = start % 60
-
-    end_h = end / 3600
-    end_m = end / 60 - end_h * 60
-    end_s = end % 60
-
-    str1 = '%d:%d:%d' % (start_h, start_m, start_s)
-    str2 = '%d:%d:%d' % (end_h, end_m, end_s)
-    command = '%s -ss %s -t %s -i %s -vcodec copy -acodec copy %s 2>> %s' % (
-        FFMPEG, str1, str2, video_file, out_file, logfile)
+    command = '%s -ss %d -t %d -i %s -vcodec copy -acodec copy %s 2>> %s' % (
+        FFMPEG, start, end, video_file, out_file, logfile)
     os.system(command)
 
 
@@ -82,17 +72,9 @@ def trim_video_by_seconds(video_file, start, end, out_file):
 
 def trim_audio(audio_file, start, end, out_file):
     temp_file = 'temp.mp3'
-    start_h = start / 3600
-    start_m = start / 60 - start_h * 60
-    start_s = start % 60
 
-    end_h = end / 3600
-    end_m = end / 60 - end_h * 60
-    end_s = end % 60
+    command = '%s -ss %d -t %d -i %s %s 2>> %s' % (FFMPEG, start, end, audio_file, temp_file, logfile)
 
-    str1 = '%d:%d:%d' % (start_h, start_m, start_s)
-    str2 = '%d:%d:%d' % (end_h, end_m, end_s)
-    command = '%s -ss %s -t %s -i %s %s 2>> %s' % (FFMPEG, str1, str2, audio_file, temp_file, logfile)
     os.system(command)
     mp3_to_aac(temp_file, out_file)
     os.remove(temp_file)

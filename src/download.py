@@ -70,7 +70,7 @@ def setup_logger(logger_level, file_name=LOGFILE, extra_name='', log=None):
     return logger
 
 
-logger = setup_logger(logging.INFO)
+logger = setup_logger(logging.DEBUG)
 
 
 def extract_timings(bbb_version):
@@ -385,8 +385,8 @@ def main():
                     meetingId=meetingId
                 )
 
-                mail_header = get_mail_header(config.COMPANY, language=config.LANGUAGE)
-                mail_body = get_mail_body(url, language=config.LANGUAGE)
+                mail_header = get_mail_header(config.COMPANY)
+                mail_body = get_mail_body(url)
 
                 sendmail(mail_header,
                          html_email('', mail_body),
