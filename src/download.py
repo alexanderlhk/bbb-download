@@ -332,8 +332,8 @@ def get_mail_body(url, language='es'):
 
 def get_mail_header(company, language='es'):
     headers = {
-        'en': '[RECORDING READY] {}'.format(config.COMPANY),
-        'es': '[GRABACIÓN LISTA] {}'.format(config.COMPANY)
+        'en': '[RECORDING READY] {}'.format(company),
+        'es': '[GRABACIÓN LISTA] {}'.format(company)
     }
 
     if language not in headers:
@@ -386,9 +386,10 @@ def main():
                     meetingId=meetingId
                 )
 
+                mail_header = get_mail_header(config.COMPANY, language=config.LANGUAGE)
                 mail_body = get_mail_body(url, language=config.LANGUAGE)
 
-                sendmail(get_mail_header(config.COMPANY, language=config.LANGUAGE),
+                sendmail(mail_header,
                          html_email('', mail_body),
                          receivers=[response['owner']]+response['users']
                 )
