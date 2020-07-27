@@ -70,7 +70,7 @@ def setup_logger(logger_level, file_name=LOGFILE, extra_name='', log=None):
     return logger
 
 
-logger = setup_logger(logging.DEBUG)
+logger = setup_logger(logging.INFO)
 
 
 def extract_timings(bbb_version):
