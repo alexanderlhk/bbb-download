@@ -318,6 +318,30 @@ def html_email(head, body):
     """.format(head=head, body=body)
 
 
+def get_mail_body(url, language='es'):
+    bodies = {
+        'en': 'Dear User,<br><br>Your recording is ready to be downloaded or viewed online <a href="{}">HERE</a>.'.format(url),
+        'es': 'Hola,<br><br>Le notificamos que su grabación está lista para ser descargada y visionada online <a href="{}">AQUÍ</a>.'.format(url)
+    }
+
+    if language not in bodies:
+        language = 'en'
+
+    return bodies[language]
+
+
+def get_mail_header(company, language='es'):
+    headers = {
+        'en': '[RECORDING READY] {}'.format(config.COMPANY),
+        'es': '[GRABACIÓN LISTA] {}'.format(config.COMPANY)
+    }
+
+    if language not in headers:
+        language = 'en'
+
+    return headers[language]
+
+
 def main():
     sys.stderr = open(LOGFILE, 'a')
     logger.info('\n<{dash}{time}{dash}>\n'.format(dash='-'*20, time=time.strftime('%c')))
@@ -361,12 +385,21 @@ def main():
                     dns=config.DNS,
                     meetingId=meetingId
                 )
-                mail = 'Dear User,<br><br>Your recording is ready to be downloaded or viewed online <a href="{}">HERE</a>.'.format(url)
-                sendmail('[RECORDING READY] {}'.format(config.COMPANY), html_email('', mail), receivers=[response['owner']]+response['users'])
+
+                mail_body = get_mail_body(url, language=config.LANGUAGE)
+
+                sendmail(get_mail_header(config.COMPANY, language=config.LANGUAGE),
+                         html_email('', mail_body),
+                         receivers=[response['owner']]+response['users']
+                )
 
             else:
-                mail = 'Error we cant find the recording {}:<br><br> {}'.format(meetingId, response.text)
-                sendmail('[RECORDING READY] {}'.format(config.COMPANY), html_email('', mail), receivers=[config.MAINTAINER])
+                mail_body = 'Error we cant find the recording {}:<br><br> {}'.format(meetingId, response.text)
+
+                sendmail('[RECORDING ERROR] {}'.format(config.COMPANY),
+                         html_email('', mail_body),
+                         receivers=[config.MAINTAINER]
+                )
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 SEND_EMAIL = True
 
 if SEND_EMAIL:
+    LANGUAGE = 'es'
     MAINTAINER = ''
     API_GET_RECEIVERS = ''
     API_USER = ''
