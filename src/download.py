@@ -139,7 +139,9 @@ def create_slideshow(dictionary, length, result, bbb_version):
             f.write('file ' + out_ts_file + '\n')
 
     ffmpeg.concat_videos(video_list, result)
-    os.remove(video_list)
+
+    if logger.level > logging.DEBUG:
+        os.remove(video_list)
 
 
 def get_presentation_dims(presentation_name):
@@ -366,9 +368,11 @@ def main():
         # zipdir('./download/')
         copy_mp4(result, source_dir + meetingId + '.mp4')
     finally:
-        logger.info('Cleaning up temp files...')
-        cleanup()
-        logger.info('Done')
+        if logger.level > logging.DEBUG:
+            logger.info('Cleaning up temp files...')
+            cleanup()
+
+            logger.info('Done')
 
         if config.SEND_EMAIL:
             response = requests.post(
