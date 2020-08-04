@@ -379,21 +379,33 @@ def main():
             )
 
             if response.status_code == 200 and response.json()['status'] == 'success':
-                response = response.json()
-                url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
-                    dns=config.DNS,
-                    meetingId=meetingId
-                )
+                try:
+                    response = response.json()
+                    url = 'https://{dns}/download/presentation/{meetingId}/{meetingId}.mp4 '.format(
+                        dns=config.DNS,
+                        meetingId=meetingId
+                    )
 
-                language = response.get('language', 'es')
+                    owner = response['owner']
 
-                mail_header = get_mail_header(config.COMPANY, language=language)
-                mail_body = get_mail_body(url, language=language)
+                    language_to_users = {}
+                    language_to_users[owner['language']] = [owner['email']]
 
-                sendmail(mail_header,
-                         html_email('', mail_body),
-                         receivers=[response['owner']]+response['users']
-                )
+                    for user in response.get('users', []):
+                        language_to_users[user['language']].append(user['email'])
+
+                    for language, users in language_to_users.items():
+                        mail_header = get_mail_header(config.COMPANY, language=language)
+                        mail_body = get_mail_body(url, language=language)
+
+                        sendmail(mail_header, html_email('', mail_body), receivers=users)
+                except Exception as e:
+                    mail_body = 'Exception: {}'.format(e)
+
+                    sendmail('[RECORDING EXCEPTION] {}'.format(config.COMPANY),
+                             html_email('', mail_body),
+                             receivers=[config.MAINTAINER]
+                    )
 
             else:
                 mail_body = 'Error we cant find the recording {}:<br><br> {}'.format(meetingId, response.text)
