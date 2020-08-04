@@ -385,8 +385,10 @@ def main():
                     meetingId=meetingId
                 )
 
-                mail_header = get_mail_header(config.COMPANY)
-                mail_body = get_mail_body(url)
+                language = response.get('language', 'es')
+
+                mail_header = get_mail_header(config.COMPANY, language=language)
+                mail_body = get_mail_body(url, language=language)
 
                 sendmail(mail_header,
                          html_email('', mail_body),
